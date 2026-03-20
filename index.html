@@ -1,0 +1,729 @@
+<!doctype html>
+<html lang="uk">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#0B1220" />
+
+    <link rel="manifest" href="./manifest.json" />
+    <link rel="icon" href="./icon.svg" type="image/svg+xml" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="StepMap" />
+    <title>StepMap</title>
+
+    <style>
+      :root {
+        --bg: #0b1220;
+        --card: rgba(17, 24, 39, 0.86);
+        --text: #e5e7eb;
+        --muted: #9ca3af;
+        --border: rgba(255, 255, 255, 0.12);
+        --accent: #22c55e;
+        --accent2: #60a5fa;
+        --danger: #ef4444;
+      }
+
+      @media (prefers-color-scheme: light) {
+        :root {
+          --bg: #f8fafc;
+          --card: rgba(255, 255, 255, 0.86);
+          --text: #0b1220;
+          --muted: #4b5563;
+          --border: rgba(2, 6, 23, 0.12);
+          --accent: #16a34a;
+          --accent2: #2563eb;
+          --danger: #dc2626;
+        }
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        height: 100%;
+      }
+
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto,
+          Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      }
+
+      .app {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+      }
+
+      header {
+        padding: 14px 14px 10px;
+      }
+
+      .title {
+        display: flex;
+        align-items: baseline;
+        gap: 10px;
+      }
+
+      .title h1 {
+        margin: 0;
+        font-size: 22px;
+        letter-spacing: 0.2px;
+      }
+
+      .subtitle {
+        margin-top: 4px;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.3;
+      }
+
+      .card {
+        margin: 10px 14px 12px;
+        padding: 12px;
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+
+      label {
+        display: block;
+        font-size: 13px;
+        color: var(--muted);
+        margin-bottom: 6px;
+      }
+
+      input {
+        width: 100%;
+        font-size: 18px;
+        padding: 12px 12px;
+        border-radius: 12px;
+        background: transparent;
+        color: var(--text);
+        border: 1px solid var(--border);
+        outline: none;
+      }
+
+      input:focus {
+        border-color: rgba(34, 197, 94, 0.65);
+      }
+
+      .row {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+
+      .bigStat {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        padding: 10px;
+        border-radius: 14px;
+        border: 1px dashed rgba(255, 255, 255, 0.18);
+      }
+
+      @media (prefers-color-scheme: light) {
+        .bigStat {
+          border-color: rgba(2, 6, 23, 0.18);
+        }
+      }
+
+      .bigStat .k {
+        font-size: 18px;
+        font-weight: 650;
+      }
+
+      .bigStat .m {
+        font-size: 14px;
+        color: var(--muted);
+        line-height: 1.3;
+      }
+
+      .actions {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 10px;
+        margin-top: 10px;
+      }
+
+      button {
+        appearance: none;
+        width: 100%;
+        border: 0;
+        border-radius: 16px;
+        padding: 14px 14px;
+        font-size: 18px;
+        font-weight: 650;
+        color: #071018;
+        background: linear-gradient(135deg, var(--accent2), var(--accent));
+        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.25);
+      }
+
+      button:disabled {
+        opacity: 0.6;
+        box-shadow: none;
+        cursor: not-allowed;
+      }
+
+      .ghostBtn {
+        background: transparent;
+        color: var(--text);
+        border: 1px solid var(--border);
+        box-shadow: none;
+        font-weight: 600;
+      }
+
+      .status {
+        margin-top: 8px;
+        font-size: 14px;
+        color: var(--muted);
+        line-height: 1.35;
+        min-height: 18px;
+      }
+
+      #mapWrap {
+        position: relative;
+        flex: 1;
+        margin: 0 0 14px;
+        overflow: hidden;
+      }
+
+      #map {
+        position: absolute;
+        inset: 0;
+      }
+
+      .overlay {
+        position: absolute;
+        left: 12px;
+        right: 12px;
+        bottom: 14px;
+        background: rgba(0, 0, 0, 0.35);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        border-radius: 16px;
+        padding: 12px 12px;
+        backdrop-filter: blur(10px);
+      }
+
+      @media (prefers-color-scheme: light) {
+        .overlay {
+          background: rgba(255, 255, 255, 0.55);
+          border: 1px solid rgba(2, 6, 23, 0.14);
+        }
+      }
+
+      .overlay .main {
+        font-size: 20px;
+        font-weight: 750;
+        letter-spacing: 0.2px;
+      }
+
+      .overlay .hint {
+        color: rgba(255, 255, 255, 0.75);
+        margin-top: 4px;
+        font-size: 13px;
+        line-height: 1.35;
+      }
+
+      @media (prefers-color-scheme: light) {
+        .overlay .hint {
+          color: rgba(2, 6, 23, 0.65);
+        }
+      }
+
+      .srOnly {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="app">
+      <header>
+        <div class="title">
+          <h1>StepMap</h1>
+        </div>
+        <div class="subtitle">
+          Маршрут на потрібну кількість кроків (PWA, без бекенду).
+        </div>
+      </header>
+
+      <div class="card">
+        <div class="grid">
+          <div class="row">
+            <div>
+              <label for="heightCm">Зріст (см)</label>
+              <input
+                id="heightCm"
+                inputmode="numeric"
+                type="number"
+                min="80"
+                max="250"
+                step="0.1"
+                placeholder="Напр.: 175"
+              />
+            </div>
+          </div>
+
+          <div class="row">
+            <div>
+              <label for="targetSteps">Денна ціль кроків</label>
+              <input
+                id="targetSteps"
+                inputmode="numeric"
+                type="number"
+                min="100"
+                step="100"
+                placeholder="10000"
+              />
+            </div>
+          </div>
+
+          <div class="row">
+            <div>
+              <label for="stepsToday">Вже пройдено кроків сьогодні</label>
+              <input
+                id="stepsToday"
+                inputmode="numeric"
+                type="number"
+                min="0"
+                step="1"
+                placeholder="0"
+              />
+            </div>
+          </div>
+
+          <div class="bigStat" aria-live="polite">
+            <div class="k" id="remainingStepsLabel">Лишалось: —</div>
+            <div class="m" id="remainingMetersLabel">
+              Вкажіть зріст, щоб розрахувати довжину кроку.
+            </div>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button id="routeBtn" disabled type="button">
+            Показати маршрут
+          </button>
+          <button
+            id="resetBtn"
+            class="ghostBtn"
+            disabled
+            type="button"
+            title="Очистити карту та скинути статус"
+          >
+            Очистити
+          </button>
+        </div>
+
+        <div class="status" id="status"></div>
+      </div>
+
+      <div id="mapWrap">
+        <div id="map" aria-label="Карта"></div>
+        <div class="overlay" id="overlay">
+          <div class="main" id="overlayMain">Поки що без маршруту</div>
+          <div class="hint" id="overlayHint">
+            Натисніть “Показати маршрут” після вводу даних.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Заміни значення на свій Google Maps API key.
+      // Докладніше див. `README.md`.
+      const GOOGLE_MAPS_API_KEY = "AIzaSyCISXGRM0MRgKQLm-6TIKPolHUMJakR_vE";
+
+      const LS = {
+        heightCm: "stepmap:heightCm",
+        targetSteps: "stepmap:targetSteps",
+      };
+
+      const fmtUk = new Intl.NumberFormat("uk-UA");
+
+      const els = {
+        heightCm: document.getElementById("heightCm"),
+        targetSteps: document.getElementById("targetSteps"),
+        stepsToday: document.getElementById("stepsToday"),
+        remainingStepsLabel: document.getElementById("remainingStepsLabel"),
+        remainingMetersLabel: document.getElementById("remainingMetersLabel"),
+        routeBtn: document.getElementById("routeBtn"),
+        resetBtn: document.getElementById("resetBtn"),
+        status: document.getElementById("status"),
+        overlayMain: document.getElementById("overlayMain"),
+        overlayHint: document.getElementById("overlayHint"),
+        mapWrap: document.getElementById("mapWrap"),
+      };
+
+      let map = null;
+      let directionsService = null;
+      let rendererOut = null;
+      let rendererBack = null;
+
+      let startLatLng = null;
+      let lastRouteTotal = null;
+
+      function setStatus(msg) {
+        els.status.textContent = msg || "";
+      }
+
+      function loadSettings() {
+        const heightRaw = localStorage.getItem(LS.heightCm);
+        const targetRaw = localStorage.getItem(LS.targetSteps);
+
+        const height = heightRaw ? Number(heightRaw) : null;
+        const target = targetRaw ? Number(targetRaw) : 10000;
+
+        if (height && Number.isFinite(height)) els.heightCm.value = String(height);
+        els.targetSteps.value = Number.isFinite(target) ? String(target) : "10000";
+      }
+
+      function saveSettings() {
+        if (els.heightCm.value !== "") localStorage.setItem(LS.heightCm, els.heightCm.value);
+        else localStorage.removeItem(LS.heightCm);
+
+        if (els.targetSteps.value !== "") localStorage.setItem(LS.targetSteps, els.targetSteps.value);
+      }
+
+      function stepMetersFromHeightCm(heightCm) {
+        // За формулою: зріст_см × 0.414 / 100 = метри
+        return heightCm * 0.414 / 100;
+      }
+
+      function getInputs() {
+        const heightCm = els.heightCm.value === "" ? null : Number(els.heightCm.value);
+        const targetSteps = els.targetSteps.value === "" ? null : Number(els.targetSteps.value);
+        const stepsToday = els.stepsToday.value === "" ? null : Number(els.stepsToday.value);
+        return { heightCm, targetSteps, stepsToday };
+      }
+
+      function updateRemainingUI() {
+        const { heightCm, targetSteps, stepsToday } = getInputs();
+
+        if (targetSteps == null || stepsToday == null || !Number.isFinite(targetSteps) || !Number.isFinite(stepsToday)) {
+          els.remainingStepsLabel.textContent = "Лишалось: —";
+          els.remainingMetersLabel.textContent = "Вкажіть ціль та вже пройдено кроків.";
+          els.routeBtn.disabled = true;
+          return;
+        }
+
+        const remainingSteps = Math.max(0, targetSteps - stepsToday);
+        els.remainingStepsLabel.textContent = `Лишалось: ${fmtUk.format(remainingSteps)} кроків`;
+
+        if (heightCm == null || !Number.isFinite(heightCm)) {
+          els.remainingMetersLabel.textContent = "Вкажіть зріст, щоб розрахувати довжину кроку.";
+        } else {
+          const stepMeters = stepMetersFromHeightCm(heightCm);
+          const remainingMeters = remainingSteps * stepMeters;
+          const remainingMetersRounded = Math.round(remainingMeters);
+          const stepMetersRounded = Math.round(stepMeters * 100) / 100;
+
+          els.remainingStepsLabel.textContent = `Лишалось: ${fmtUk.format(remainingSteps)} кроків = ${fmtUk.format(
+            remainingMetersRounded
+          )} м`;
+          els.remainingMetersLabel.textContent = `Довжина кроку: ${fmtUk.format(stepMetersRounded)} м`;
+        }
+
+        els.routeBtn.disabled = !(heightCm != null && Number.isFinite(heightCm) && remainingSteps > 0);
+      }
+
+      function loadGoogleMapsScript() {
+        return new Promise((resolve, reject) => {
+          if (!GOOGLE_MAPS_API_KEY || GOOGLE_MAPS_API_KEY === "ВАШ_КЛЮЧ") {
+            reject(new Error("GOOGLE_MAPS_API_KEY не заданий."));
+            return;
+          }
+
+          if (window.google && window.google.maps) {
+            resolve();
+            return;
+          }
+
+          const existing = document.querySelector('script[data-stepmap="google-maps"]');
+          if (existing) {
+            existing.addEventListener("load", () => resolve());
+            existing.addEventListener("error", reject);
+            return;
+          }
+
+          window.initStepMap = () => resolve();
+
+          const s = document.createElement("script");
+          s.dataset.stepmap = "google-maps";
+          s.async = true;
+          s.defer = true;
+          s.src =
+            "https://maps.googleapis.com/maps/api/js?key=" +
+            encodeURIComponent(GOOGLE_MAPS_API_KEY) +
+            "&v=weekly&callback=initStepMap";
+          document.head.appendChild(s);
+        });
+      }
+
+      function ensureMap() {
+        if (map) return;
+
+        map = new google.maps.Map(document.getElementById("map"), {
+          zoom: 15,
+          center: { lat: 0, lng: 0 },
+          fullscreenControl: false,
+          streetViewControl: false,
+          mapTypeControl: false,
+          zoomControl: true,
+        });
+
+        directionsService = new google.maps.DirectionsService();
+        rendererOut = new google.maps.DirectionsRenderer({
+          map,
+          suppressMarkers: false,
+          polylineOptions: { strokeColor: "#60a5fa", strokeWeight: 6, strokeOpacity: 0.9 },
+          preserveViewport: true,
+        });
+        rendererBack = new google.maps.DirectionsRenderer({
+          map,
+          suppressMarkers: false,
+          polylineOptions: { strokeColor: "#22c55e", strokeWeight: 6, strokeOpacity: 0.9 },
+          preserveViewport: true,
+        });
+      }
+
+      function getCurrentLocation() {
+        return new Promise((resolve, reject) => {
+          if (!navigator.geolocation) {
+            reject(new Error("Geolocation API не підтримується."));
+            return;
+          }
+          navigator.geolocation.getCurrentPosition(
+            (pos) => {
+              const { latitude, longitude } = pos.coords;
+              resolve({ lat: latitude, lng: longitude });
+            },
+            (err) => reject(err),
+            { enableHighAccuracy: true, timeout: 12000, maximumAge: 2000 }
+          );
+        });
+      }
+
+      function toRadians(deg) {
+        return (deg * Math.PI) / 180;
+      }
+      function toDegrees(rad) {
+        return (rad * 180) / Math.PI;
+      }
+
+      function computeDestination(start, distanceMeters, bearingDegrees) {
+        // Виходимо з сфери Землі та бєарингу.
+        const R = 6378137;
+        const brng = toRadians(bearingDegrees);
+        const lat1 = toRadians(start.lat);
+        const lon1 = toRadians(start.lng);
+        const dByR = distanceMeters / R;
+
+        const lat2 = Math.asin(
+          Math.sin(lat1) * Math.cos(dByR) +
+            Math.cos(lat1) * Math.sin(dByR) * Math.cos(brng)
+        );
+        const lon2 =
+          lon1 +
+          Math.atan2(
+            Math.sin(brng) * Math.sin(dByR) * Math.cos(lat1),
+            Math.cos(dByR) - Math.sin(lat1) * Math.sin(lat2)
+          );
+
+        return { lat: toDegrees(lat2), lng: toDegrees(lon2) };
+      }
+
+      function formatStepsAndMeters(steps, meters) {
+        const metersRounded = Math.round(meters);
+        return `≈ ${fmtUk.format(steps)} кроків (${fmtUk.format(metersRounded)} м)`;
+      }
+
+      function sumMetersFromDirectionsResult(result) {
+        let meters = 0;
+        const routes = result && result.routes ? result.routes : [];
+        for (const r of routes) {
+          const legs = (r && r.legs) ? r.legs : [];
+          for (const leg of legs) {
+            if (leg && leg.distance && typeof leg.distance.value === "number") {
+              meters += leg.distance.value;
+            }
+          }
+        }
+        return meters;
+      }
+
+      function clearRoute() {
+        if (rendererOut) rendererOut.setDirections({ routes: [] });
+        if (rendererBack) rendererBack.setDirections({ routes: [] });
+        lastRouteTotal = null;
+        els.overlayMain.textContent = "Поки що без маршруту";
+        els.overlayHint.textContent = "Натисніть “Показати маршрут” після вводу даних.";
+        els.resetBtn.disabled = true;
+      }
+
+      async function buildRoundTripRoute() {
+        setStatus("Отримую геолокацію…");
+        if (!startLatLng) {
+          startLatLng = await getCurrentLocation();
+        }
+
+        const { heightCm, targetSteps, stepsToday } = getInputs();
+        if (heightCm == null || !Number.isFinite(heightCm)) throw new Error("Вкажіть зріст.");
+        if (targetSteps == null || stepsToday == null) throw new Error("Вкажіть ціль та вже пройдено кроків.");
+
+        const remainingSteps = Math.max(0, targetSteps - stepsToday);
+        if (remainingSteps <= 0) {
+          els.overlayMain.textContent = "Ціль вже досягнута";
+          els.overlayHint.textContent = "Маршрут не потрібен.";
+          return;
+        }
+
+        const stepMeters = stepMetersFromHeightCm(heightCm);
+        if (!(stepMeters > 0)) throw new Error("Некоректне значення росту.");
+
+        // Загальна відстань маршруту (вихід + назад) ≈ remainingSteps * stepMeters.
+        const totalMeters = remainingSteps * stepMeters;
+        const outMeters = totalMeters / 2;
+
+        ensureMap();
+        map.setCenter(startLatLng);
+
+        const bearing = 0; // Північ (можна змінити, якщо захочеш інший стиль маршруту)
+        const outPoint = computeDestination(startLatLng, outMeters, bearing);
+
+        setStatus("Будую маршрут (вихід)…");
+        els.resetBtn.disabled = false;
+
+        const [outResult, backResult] = await Promise.all([
+          new Promise((resolve, reject) => {
+            directionsService.route(
+              {
+                origin: startLatLng,
+                destination: outPoint,
+                travelMode: google.maps.TravelMode.WALKING,
+              },
+              (res, status) => {
+                if (status === "OK" && res) resolve(res);
+                else reject(new Error("Directions API (вихід) помилка: " + status));
+              }
+            );
+          }),
+          new Promise((resolve, reject) => {
+            directionsService.route(
+              {
+                origin: outPoint,
+                destination: startLatLng,
+                travelMode: google.maps.TravelMode.WALKING,
+              },
+              (res, status) => {
+                if (status === "OK" && res) resolve(res);
+                else reject(new Error("Directions API (назад) помилка: " + status));
+              }
+            );
+          }),
+        ]);
+
+        rendererOut.setDirections(outResult);
+        rendererBack.setDirections(backResult);
+
+        const totalMetersActual = sumMetersFromDirectionsResult(outResult) + sumMetersFromDirectionsResult(backResult);
+        const totalStepsActual = Math.max(0, Math.round(totalMetersActual / stepMeters));
+        lastRouteTotal = { totalMetersActual, totalStepsActual };
+
+        els.overlayMain.textContent = formatStepsAndMeters(totalStepsActual, totalMetersActual);
+        els.overlayHint.textContent = "Маршрут побудовано з використанням WALKING Directions.";
+        setStatus("");
+      }
+
+      async function initApp() {
+        loadSettings();
+        updateRemainingUI();
+
+        // Події вводу
+        for (const id of ["heightCm", "targetSteps", "stepsToday"]) {
+          els[id].addEventListener("input", () => {
+            saveSettings();
+            updateRemainingUI();
+          });
+          els[id].addEventListener("change", () => {
+            saveSettings();
+            updateRemainingUI();
+          });
+        }
+
+        els.routeBtn.addEventListener("click", async () => {
+          try {
+            els.routeBtn.disabled = true;
+            setStatus("Запускаю карту…");
+            await loadGoogleMapsScript();
+            ensureMap();
+            await buildRoundTripRoute();
+          } catch (e) {
+            setStatus(String(e && e.message ? e.message : e));
+            els.overlayMain.textContent = "Не вдалося побудувати маршрут";
+            els.overlayHint.textContent = "Спробуй ще раз або перевір API ключ та геолокацію.";
+          } finally {
+            // Повертаємо кнопку залежно від вводу
+            updateRemainingUI();
+          }
+        });
+
+        els.resetBtn.addEventListener("click", () => {
+          clearRoute();
+          setStatus("");
+        });
+
+        // Сервіс-воркер (офлайн)
+        if ("serviceWorker" in navigator) {
+          window.addEventListener("load", async () => {
+            try {
+              await navigator.serviceWorker.register("./sw.js");
+            } catch (e) {
+              // Не критично
+            }
+          });
+        }
+
+        // Стартове завантаження карти + геолокації
+        try {
+          setStatus("Завантаження Google Maps…");
+          await loadGoogleMapsScript();
+          ensureMap();
+
+          setStatus("Читаю геолокацію…");
+          startLatLng = await getCurrentLocation();
+          map.setCenter(startLatLng);
+          setStatus("");
+        } catch (e) {
+          // Якщо геолокація або API не доступні — не блокуємо ввід
+          setStatus(String(e && e.message ? e.message : e));
+          clearRoute();
+        }
+      }
+
+      initApp();
+    </script>
+  </body>
+</html>
+

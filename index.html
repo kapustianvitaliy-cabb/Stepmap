@@ -1,729 +1,475 @@
-<!doctype html>
-<html lang="uk">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#0B1220" />
+<!doctype html><html lang="uk"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><meta name="theme-color" content="#0B1220"/><link rel="manifest" href="./manifest.json"/><link rel="icon" href="./icon.svg" type="image/svg+xml"/><meta name="apple-mobile-web-app-capable" content="yes"/><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/><meta name="apple-mobile-web-app-title" content="StepMap"/><title>StepMap</title><style>
+:root{--bg:#0b1220;--card:rgba(17,24,39,.86);--card2:rgba(17,24,39,.68);--text:#e5e7eb;--muted:#9ca3af;--border:rgba(255,255,255,.12);--accent:#22c55e;--accent2:#60a5fa;}
+@media (prefers-color-scheme: light){:root{--bg:#f8fafc;--card:rgba(255,255,255,.86);--card2:rgba(255,255,255,.62);--text:#0b1220;--muted:#4b5563;--border:rgba(2,6,23,.12);--accent:#16a34a;--accent2:#2563eb;}}
+*{box-sizing:border-box}html,body{height:100%}body{margin:0;background:var(--bg);color:var(--text);font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif}
+#mapWrap{position:fixed;inset:0}#map{position:absolute;inset:0}
+.topBar{position:fixed;top:0;left:0;right:0;z-index:50;padding:10px 12px;display:grid;grid-template-columns:1fr auto;gap:10px;pointer-events:none}
+.tabs{pointer-events:auto;background:var(--card2);border:1px solid var(--border);border-radius:16px;padding:6px;backdrop-filter:blur(10px);display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.tabBtn{appearance:none;border:1px solid transparent;background:transparent;color:var(--text);border-radius:12px;padding:12px 10px;font-size:16px;font-weight:850;letter-spacing:.1px;text-align:center}
+.tabBtn.active{border-color:rgba(255,255,255,.18);background:linear-gradient(135deg,rgba(96,165,250,.28),rgba(34,197,94,.22))}
+.gearBtn{pointer-events:auto;appearance:none;border:1px solid var(--border);background:var(--card2);color:var(--text);border-radius:16px;padding:12px 14px;font-size:18px;font-weight:900;backdrop-filter:blur(10px)}
+.overlayCard{position:fixed;left:12px;right:12px;z-index:60;background:var(--card);border:1px solid var(--border);border-radius:18px;padding:14px;backdrop-filter:blur(10px)}
+#tab1Overlay,#tab2Overlay{top:76px}.hidden{display:none!important}
+.counterMain{font-size:20px;font-weight:950;letter-spacing:.2px;line-height:1.2}
+.counterSub{margin-top:6px;font-size:13px;color:var(--muted);line-height:1.35}
+.counterSubStrong{margin-top:4px;font-size:13px;color:var(--muted)}
+.progressWrap{margin-top:12px}.progressLabel{display:flex;justify-content:space-between;gap:10px;font-size:13px;color:var(--muted);margin-bottom:8px}
+.progressBar{height:12px;border-radius:999px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);overflow:hidden}
+@media (prefers-color-scheme: light){.progressBar{background:rgba(2,6,23,.06);border:1px solid rgba(2,6,23,.10)}}
+.progressFill{height:100%;width:0%;background:linear-gradient(90deg,var(--accent2),var(--accent));border-radius:999px;transition:width 200ms ease}
+.field{display:grid;gap:6px;margin-bottom:10px}label{font-size:13px;color:var(--muted);font-weight:800}
+input{width:100%;font-size:18px;padding:12px;border-radius:14px;background:transparent;color:var(--text);border:1px solid var(--border);outline:none}
+input:focus{border-color:rgba(34,197,94,.65)}
+.bottomPanel{position:fixed;left:0;right:0;bottom:0;z-index:70;padding:12px 12px 18px;pointer-events:none;background:linear-gradient(to top,rgba(0,0,0,.35),rgba(0,0,0,0))}
+.bottomInner{pointer-events:auto}.btnRow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+button{appearance:none;width:100%;border:0;border-radius:16px;padding:14px;font-size:18px;font-weight:900;color:#071018;background:linear-gradient(135deg,var(--accent2),var(--accent));box-shadow:0 12px 28px rgba(0,0,0,.25)}
+button:disabled{opacity:.6;box-shadow:none;cursor:not-allowed}
+.ghostBtn{color:var(--text);background:transparent;border:1px solid var(--border);box-shadow:none}
+.drawerOverlay{position:fixed;inset:0;z-index:90;background:rgba(0,0,0,.35);display:none}
+.drawerOverlay.open{display:block}
+.drawer{position:absolute;right:0;top:0;bottom:0;width:min(420px,100vw);background:var(--card);border-left:1px solid var(--border);padding:14px;transform:translateX(10px);opacity:0;transition:transform 200ms ease,opacity 200ms ease;backdrop-filter:blur(10px)}
+.drawerOverlay.open .drawer{transform:translateX(0);opacity:1}
+.drawerHeader{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+.drawerTitle{font-size:16px;font-weight:950}
+.closeBtn{appearance:none;border:1px solid var(--border);background:transparent;color:var(--text);border-radius:14px;padding:10px 12px;font-size:14px;font-weight:950}
+.drawerHelp{margin-top:8px;font-size:12.5px;color:var(--muted);line-height:1.45}
+#statusToast{position:fixed;left:12px;right:12px;top:140px;z-index:80;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:10px 12px;display:none}
+#statusToast.show{display:block}
+</style></head><body>
+<div id="mapWrap"><div id="map" aria-label="Карта"></div></div>
+<div class="topBar">
+  <div class="tabs" role="tablist" aria-label="StepMap tabs">
+    <button id="tab1Btn" class="tabBtn active" type="button" aria-selected="true">🗺️ Мій маршрут</button>
+    <button id="tab2Btn" class="tabBtn" type="button" aria-selected="false">🎲 Запропонувати маршрут</button>
+  </div>
+  <button id="gearBtn" class="gearBtn" type="button" title="Налаштування">⚙️</button>
+</div>
+<div id="statusToast" aria-live="polite"></div>
 
-    <link rel="manifest" href="./manifest.json" />
-    <link rel="icon" href="./icon.svg" type="image/svg+xml" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="StepMap" />
-    <title>StepMap</title>
+<div id="tab1Overlay" class="overlayCard">
+  <div class="counterMain" id="tab1CounterMain">Натискай на карту</div>
+  <div class="counterSub" id="tab1CounterSub">Перший клік — старт, наступні — точки маршруту.</div>
+  <div class="progressWrap">
+    <div class="progressLabel"><span>Прогрес</span><span id="tab1ProgressLabel">0 / 10 000</span></div>
+    <div class="progressBar" aria-label="Прогрес до цілі"><div class="progressFill" id="tab1ProgressFill"></div></div>
+  </div>
+</div>
 
-    <style>
-      :root {
-        --bg: #0b1220;
-        --card: rgba(17, 24, 39, 0.86);
-        --text: #e5e7eb;
-        --muted: #9ca3af;
-        --border: rgba(255, 255, 255, 0.12);
-        --accent: #22c55e;
-        --accent2: #60a5fa;
-        --danger: #ef4444;
+<div id="tab2Overlay" class="overlayCard hidden">
+  <div class="field"><label for="stepsToday">Вже пройдено кроків сьогодні</label><input id="stepsToday" inputmode="numeric" type="number" min="0" step="1" placeholder="0"/></div>
+  <div class="counterSub" id="tab2Remaining">Лишилось: —</div>
+  <div class="counterSub" id="tab2Result" style="margin-top:10px">Результат: —</div>
+</div>
+
+<div class="bottomPanel"><div class="bottomInner">
+  <div id="bottomTab1" class="btnRow">
+    <button id="undoBtn" class="ghostBtn" type="button" disabled>Скасувати останню точку</button>
+    <button id="clearTab1Btn" class="ghostBtn" type="button" disabled>Очистити маршрут</button>
+  </div>
+  <div id="bottomTab2" class="btnRow hidden" style="margin-top:12px">
+    <button id="buildBtn" type="button" disabled>Побудувати маршрут</button>
+    <button id="clearTab2Btn" class="ghostBtn" type="button">Очистити</button>
+  </div>
+</div></div>
+
+<div id="drawerOverlay" class="drawerOverlay" role="dialog" aria-modal="true" aria-label="Налаштування">
+  <div class="drawer">
+    <div class="drawerHeader"><div class="drawerTitle">Налаштування</div><button id="closeDrawerBtn" class="closeBtn" type="button">Закрити</button></div>
+    <div class="field"><label for="heightCm">Зріст (см)</label><input id="heightCm" inputmode="numeric" type="number" min="80" max="250" step="0.1" placeholder="Напр.: 175"/></div>
+    <div class="field"><label for="targetSteps">Денна ціль кроків</label><input id="targetSteps" inputmode="numeric" type="number" min="100" step="100" placeholder="10000"/></div>
+    <div class="counterSubStrong" id="drawerStepInfo">Крок = — м</div>
+    <div class="drawerHelp">Працює на Directions API (WALKING). Для маршруту потрібні геолокація та Google Maps JavaScript API.</div>
+  </div>
+</div>
+
+<script>
+  const GOOGLE_MAPS_API_KEY = "AIzaSyCISXGRM0MRgKQLm-6TIKPolHUMJakR_vE";
+  const LS = { heightCm: "stepmap:heightCm", targetSteps: "stepmap:targetSteps" };
+  const fmtUk = new Intl.NumberFormat("uk-UA");
+
+  const els = {
+    tab1Btn: document.getElementById("tab1Btn"), tab2Btn: document.getElementById("tab2Btn"),
+    tab1Overlay: document.getElementById("tab1Overlay"), tab2Overlay: document.getElementById("tab2Overlay"),
+    bottomTab1: document.getElementById("bottomTab1"), bottomTab2: document.getElementById("bottomTab2"),
+    undoBtn: document.getElementById("undoBtn"), clearTab1Btn: document.getElementById("clearTab1Btn"),
+    buildBtn: document.getElementById("buildBtn"), clearTab2Btn: document.getElementById("clearTab2Btn"),
+    tab1CounterMain: document.getElementById("tab1CounterMain"), tab1CounterSub: document.getElementById("tab1CounterSub"),
+    tab1ProgressFill: document.getElementById("tab1ProgressFill"), tab1ProgressLabel: document.getElementById("tab1ProgressLabel"),
+    stepsToday: document.getElementById("stepsToday"), tab2Remaining: document.getElementById("tab2Remaining"), tab2Result: document.getElementById("tab2Result"),
+    gearBtn: document.getElementById("gearBtn"), drawerOverlay: document.getElementById("drawerOverlay"), closeDrawerBtn: document.getElementById("closeDrawerBtn"),
+    heightCm: document.getElementById("heightCm"), targetSteps: document.getElementById("targetSteps"), drawerStepInfo: document.getElementById("drawerStepInfo"),
+    statusToast: document.getElementById("statusToast"),
+  };
+
+  let map = null, directionsService = null, startLatLng = null;
+  let activeTab = "tab1";
+  let tab1Building = false, tab2Building = false;
+  let tab1Points = [], tab1Markers = [], tab1Segments = []; // {polyline,distanceMeters}
+  let tab2Polylines = [];
+
+  const setStatus = (msg) => { els.statusToast.textContent = msg || ""; els.statusToast.classList.toggle("show", !!msg); };
+
+  const stepMetersFromHeightCm = (h) => (h * 0.414) / 100;
+  const getHeightCm = () => { const v = Number(els.heightCm.value); return Number.isFinite(v) && v > 0 ? v : null; };
+  const getTargetSteps = () => { const v = Number(els.targetSteps.value); return Number.isFinite(v) && v >= 0 ? v : 10000; };
+  const getStepMeters = () => { const h = getHeightCm(); if (!h) return null; const m = stepMetersFromHeightCm(h); return m > 0 ? m : null; };
+
+  function saveSettings() {
+    if (els.heightCm.value !== "") localStorage.setItem(LS.heightCm, els.heightCm.value);
+    else localStorage.removeItem(LS.heightCm);
+    if (els.targetSteps.value !== "") localStorage.setItem(LS.targetSteps, els.targetSteps.value);
+  }
+
+  function updateDrawerStepInfo() {
+    const h = getHeightCm();
+    if (!h) { els.drawerStepInfo.textContent = "Крок = — м"; return; }
+    const m = stepMetersFromHeightCm(h);
+    els.drawerStepInfo.textContent = `Крок = ≈ ${fmtUk.format(Math.round(m*100)/100)} м`;
+  }
+
+  function loadSettings() {
+    const hRaw = localStorage.getItem(LS.heightCm);
+    const tRaw = localStorage.getItem(LS.targetSteps);
+    if (hRaw && Number.isFinite(Number(hRaw))) els.heightCm.value = String(hRaw);
+    els.targetSteps.value = (tRaw && Number.isFinite(Number(tRaw))) ? String(tRaw) : "10000";
+    updateDrawerStepInfo();
+    updateTab1UI();
+    updateTab2RemainingUI();
+  }
+
+  function clearTab1() {
+    for (const m of tab1Markers) m.setMap(null);
+    for (const s of tab1Segments) if (s.polyline) s.polyline.setMap(null);
+    tab1Points = []; tab1Markers = []; tab1Segments = [];
+    setStatus("");
+    updateTab1UI();
+  }
+
+  function clearTab2() {
+    for (const p of tab2Polylines) p.setMap(null);
+    tab2Polylines = [];
+    els.tab2Result.textContent = "Результат: —";
+    setStatus("");
+    updateTab2RemainingUI();
+  }
+
+  function setActiveTab(tabId) {
+    activeTab = tabId;
+    els.tab1Btn.classList.toggle("active", tabId === "tab1");
+    els.tab2Btn.classList.toggle("active", tabId === "tab2");
+    els.tab1Btn.setAttribute("aria-selected", tabId === "tab1" ? "true" : "false");
+    els.tab2Btn.setAttribute("aria-selected", tabId === "tab2" ? "true" : "false");
+    els.tab1Overlay.classList.toggle("hidden", tabId !== "tab1");
+    els.tab2Overlay.classList.toggle("hidden", tabId !== "tab2");
+    els.bottomTab1.classList.toggle("hidden", tabId !== "tab1");
+    els.bottomTab2.classList.toggle("hidden", tabId !== "tab2");
+    if (tabId === "tab1") clearTab2(); else clearTab1();
+  }
+
+  function ensureMap() {
+    if (map) return;
+    map = new google.maps.Map(document.getElementById("map"), { zoom: 15, center: { lat: 0, lng: 0 }, fullscreenControl: false, streetViewControl: false, mapTypeControl: false, zoomControl: true });
+    directionsService = new google.maps.DirectionsService();
+    map.addListener("click", (e) => {
+      if (activeTab !== "tab1") return;
+      if (tab1Building || !e?.latLng) return;
+      handleTab1MapClick(e.latLng);
+    });
+  }
+
+  function loadGoogleMapsScript() {
+    return new Promise((resolve, reject) => {
+      if (!GOOGLE_MAPS_API_KEY) {
+        reject(new Error("Вкажіть реальний GOOGLE_MAPS_API_KEY в index.html."));
+        return;
+      }
+      if (window.google?.maps) { resolve(); return; }
+      const existing = document.querySelector('script[data-stepmap="gmaps"]');
+      if (existing) {
+        existing.addEventListener("load", () => resolve());
+        existing.addEventListener("error", reject);
+        return;
+      }
+      window.initStepMap = () => resolve();
+      const s = document.createElement("script");
+      s.dataset.stepmap = "gmaps";
+      s.async = true;
+      s.defer = true;
+      s.src = "https://maps.googleapis.com/maps/api/js?key=" + encodeURIComponent(GOOGLE_MAPS_API_KEY) + "&v=weekly&callback=initStepMap";
+      document.head.appendChild(s);
+    });
+  }
+
+  function getCurrentLocation() {
+    return new Promise((resolve, reject) => {
+      if (!navigator.geolocation) { reject(new Error("Geolocation API не підтримується.")); return; }
+      navigator.geolocation.getCurrentPosition(
+        (pos) => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+        (err) => reject(err),
+        { enableHighAccuracy: true, timeout: 15000, maximumAge: 2500 }
+      );
+    });
+  }
+
+  function sumDistanceMetersFromDirections(result) {
+    let meters = 0;
+    const routes = result?.routes || [];
+    for (const r of routes) {
+      for (const leg of (r?.legs || [])) {
+        if (leg?.distance && typeof leg.distance.value === "number") meters += leg.distance.value;
+      }
+    }
+    return meters;
+  }
+
+  function buildPolylineFromDirections(result, color) {
+    const route = result?.routes?.[0];
+    const path = route?.overview_path;
+    if (!path?.length) return null;
+    return new google.maps.Polyline({ path, strokeColor: color, strokeOpacity: 0.95, strokeWeight: 6, map });
+  }
+
+  function addMarker(latLng, labelText) {
+    return new google.maps.Marker({
+      position: latLng,
+      map,
+      label: labelText ? { text: labelText, fontWeight: "900" } : undefined,
+      icon: { path: google.maps.SymbolPath.CIRCLE, scale: 6, fillColor: "#60a5fa", fillOpacity: 0.95, strokeColor: "#0b1220", strokeWeight: 2 },
+    });
+  }
+
+  function updateTab1UI() {
+    const targetSteps = getTargetSteps();
+    const stepMeters = getStepMeters();
+    const totalMeters = tab1Segments.reduce((a, s) => a + (s.distanceMeters || 0), 0);
+    const totalSteps = stepMeters ? Math.max(0, Math.round(totalMeters / stepMeters)) : null;
+
+    if (tab1Points.length === 0) {
+      els.tab1CounterMain.textContent = "Натискай на карту";
+      els.tab1CounterSub.textContent = "Перший клік — старт, наступні — точки маршруту.";
+      els.tab1ProgressFill.style.width = "0%";
+      els.tab1ProgressLabel.textContent = `0 / ${fmtUk.format(targetSteps)}`;
+      els.undoBtn.disabled = true;
+      els.clearTab1Btn.disabled = true;
+      return;
+    }
+
+    if (!stepMeters) {
+      els.tab1CounterMain.textContent = "≈ — кроків";
+      els.tab1CounterSub.textContent = "Вкажіть зріст у ⚙️, щоб рахувати кроки.";
+      els.tab1ProgressFill.style.width = "0%";
+      els.tab1ProgressLabel.textContent = `0 / ${fmtUk.format(targetSteps)}`;
+      els.undoBtn.disabled = false;
+      els.clearTab1Btn.disabled = false;
+      return;
+    }
+
+    els.tab1CounterMain.textContent = `≈ ${fmtUk.format(totalSteps)} кроків (${fmtUk.format(Math.round(totalMeters))} м)`;
+    els.tab1CounterSub.textContent = "Walking маршрут по реальних вулицях (Directions API).";
+
+    const ratio = targetSteps > 0 ? Math.min(1, totalSteps / targetSteps) : 0;
+    els.tab1ProgressFill.style.width = `${Math.round(ratio * 100)}%`;
+    els.tab1ProgressLabel.textContent = `${fmtUk.format(totalSteps)} / ${fmtUk.format(targetSteps)}`;
+
+    els.undoBtn.disabled = false;
+    els.clearTab1Btn.disabled = false;
+  }
+
+  async function handleTab1MapClick(latLng) {
+    tab1Building = true;
+    try {
+      const idx = tab1Points.length;
+      tab1Points.push(latLng);
+      tab1Markers.push(addMarker(latLng, String(idx + 1)));
+
+      if (tab1Points.length >= 2) {
+        setStatus("Будую сегмент…");
+        const from = tab1Points[tab1Points.length - 2];
+        const to = tab1Points[tab1Points.length - 1];
+        const res = await new Promise((resolve, reject) => {
+          directionsService.route({ origin: from, destination: to, travelMode: google.maps.TravelMode.WALKING }, (r, status) => {
+            if (status === "OK" && r) resolve(r);
+            else reject(new Error("Directions API (сегмент): " + status));
+          });
+        });
+        tab1Segments.push({ polyline: buildPolylineFromDirections(res, "#60a5fa"), distanceMeters: sumDistanceMetersFromDirections(res) });
       }
 
-      @media (prefers-color-scheme: light) {
-        :root {
-          --bg: #f8fafc;
-          --card: rgba(255, 255, 255, 0.86);
-          --text: #0b1220;
-          --muted: #4b5563;
-          --border: rgba(2, 6, 23, 0.12);
-          --accent: #16a34a;
-          --accent2: #2563eb;
-          --danger: #dc2626;
-        }
-      }
+      setStatus("");
+      updateTab1UI();
+    } catch (e) {
+      setStatus(e?.message ? e.message : String(e));
+      updateTab1UI();
+    } finally {
+      tab1Building = false;
+    }
+  }
 
-      * {
-        box-sizing: border-box;
-      }
+  // Tab1 buttons
+  els.undoBtn.addEventListener("click", () => {
+    if (tab1Building || tab1Points.length === 0) return;
+    const lastMarker = tab1Markers.pop();
+    if (lastMarker) lastMarker.setMap(null);
+    tab1Points.pop();
+    if (tab1Segments.length > tab1Points.length - 1) {
+      const lastSeg = tab1Segments.pop();
+      if (lastSeg?.polyline) lastSeg.polyline.setMap(null);
+    }
+    updateTab1UI();
+  });
 
-      html,
-      body {
-        height: 100%;
-      }
+  els.clearTab1Btn.addEventListener("click", () => {
+    if (tab1Building) return;
+    clearTab1();
+  });
 
-      body {
-        margin: 0;
-        background: var(--bg);
-        color: var(--text);
-        font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto,
-          Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
-      }
+  // Tab2 remaining + build
+  function updateTab2RemainingUI() {
+    const stepMeters = getStepMeters();
+    const targetSteps = getTargetSteps();
+    const raw = els.stepsToday.value;
+    const stepsToday = raw === "" ? null : Number(raw);
 
-      .app {
-        display: flex;
-        flex-direction: column;
-        height: 100%;
-      }
+    if (stepsToday == null || !Number.isFinite(stepsToday) || stepsToday < 0) {
+      els.tab2Remaining.textContent = "Лишилось: —";
+      els.buildBtn.disabled = true;
+      return;
+    }
 
-      header {
-        padding: 14px 14px 10px;
-      }
+    const remainingSteps = Math.max(0, targetSteps - stepsToday);
 
-      .title {
-        display: flex;
-        align-items: baseline;
-        gap: 10px;
-      }
+    if (!stepMeters) {
+      els.tab2Remaining.textContent = `Лишилось: ${fmtUk.format(remainingSteps)} кроків (вкажіть зріст)`;
+      els.buildBtn.disabled = remainingSteps <= 0;
+      return;
+    }
 
-      .title h1 {
-        margin: 0;
-        font-size: 22px;
-        letter-spacing: 0.2px;
-      }
+    const remainingMeters = remainingSteps * stepMeters;
+    els.tab2Remaining.textContent = `Лишилось: ${fmtUk.format(remainingSteps)} кроків = ${fmtUk.format(Math.round(remainingMeters))} метрів`;
+    els.buildBtn.disabled = remainingSteps <= 0;
+  }
 
-      .subtitle {
-        margin-top: 4px;
-        color: var(--muted);
-        font-size: 13px;
-        line-height: 1.3;
-      }
+  els.stepsToday.addEventListener("input", () => updateTab2RemainingUI());
 
-      .card {
-        margin: 10px 14px 12px;
-        padding: 12px;
-        background: var(--card);
-        border: 1px solid var(--border);
-        border-radius: 16px;
-      }
+  // Tab2 build round trip
+  function toRadians(d) { return (d * Math.PI) / 180; }
+  function toDegrees(r) { return (r * 180) / Math.PI; }
+  function computeDestination(start, distanceMeters, bearingDegrees) {
+    const R = 6378137;
+    const brng = toRadians(bearingDegrees);
+    const lat1 = toRadians(start.lat);
+    const lon1 = toRadians(start.lng);
+    const dByR = distanceMeters / R;
+    const lat2 = Math.asin(Math.sin(lat1) * Math.cos(dByR) + Math.cos(lat1) * Math.sin(dByR) * Math.cos(brng));
+    const lon2 = lon1 + Math.atan2(Math.sin(brng) * Math.sin(dByR) * Math.cos(lat1), Math.cos(dByR) - Math.sin(lat1) * Math.sin(lat2));
+    return { lat: toDegrees(lat2), lng: toDegrees(lon2) };
+  }
 
-      .grid {
-        display: grid;
-        grid-template-columns: 1fr;
-        gap: 10px;
-      }
+  els.buildBtn.addEventListener("click", async () => {
+    if (tab2Building) return;
+    tab2Building = true;
+    try {
+      const stepMeters = getStepMeters();
+      if (!stepMeters) throw new Error("Вкажіть зріст у ⚙️.");
+      const targetSteps = getTargetSteps();
+      const stepsToday = Number(els.stepsToday.value);
+      if (!Number.isFinite(stepsToday)) throw new Error("Вкажіть кроки сьогодні.");
 
-      label {
-        display: block;
-        font-size: 13px;
-        color: var(--muted);
-        margin-bottom: 6px;
-      }
+      const remainingSteps = Math.max(0, targetSteps - stepsToday);
+      if (remainingSteps <= 0) { els.tab2Result.textContent = "Результат: ціль досягнута"; return; }
 
-      input {
-        width: 100%;
-        font-size: 18px;
-        padding: 12px 12px;
-        border-radius: 12px;
-        background: transparent;
-        color: var(--text);
-        border: 1px solid var(--border);
-        outline: none;
-      }
+      if (!startLatLng) startLatLng = await getCurrentLocation();
+      else startLatLng = await getCurrentLocation().catch(() => startLatLng);
 
-      input:focus {
-        border-color: rgba(34, 197, 94, 0.65);
-      }
+      ensureMap();
+      map.setCenter(startLatLng);
+      els.tab2Result.textContent = "Результат: будую…";
+      setStatus("Будую маршрут…");
 
-      .row {
-        display: grid;
-        grid-template-columns: 1fr;
-        gap: 10px;
-      }
+      for (const p of tab2Polylines) p.setMap(null);
+      tab2Polylines = [];
 
-      .bigStat {
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
-        padding: 10px;
-        border-radius: 14px;
-        border: 1px dashed rgba(255, 255, 255, 0.18);
-      }
+      const totalMeters = remainingSteps * stepMeters;
+      const outMeters = totalMeters / 2;
+      const outPoint = computeDestination(startLatLng, outMeters, 0);
 
-      @media (prefers-color-scheme: light) {
-        .bigStat {
-          border-color: rgba(2, 6, 23, 0.18);
-        }
-      }
+      const bounds = new google.maps.LatLngBounds();
 
-      .bigStat .k {
-        font-size: 18px;
-        font-weight: 650;
-      }
+      const outResult = await new Promise((resolve, reject) => {
+        directionsService.route({ origin: startLatLng, destination: outPoint, travelMode: google.maps.TravelMode.WALKING }, (r, status) => {
+          if (status === "OK" && r) resolve(r);
+          else reject(new Error("Directions API (вихід): " + status));
+        });
+      });
+      const outPolyline = buildPolylineFromDirections(outResult, "#60a5fa");
+      if (outPolyline) tab2Polylines.push(outPolyline);
 
-      .bigStat .m {
-        font-size: 14px;
-        color: var(--muted);
-        line-height: 1.3;
-      }
+      const backResult = await new Promise((resolve, reject) => {
+        directionsService.route({ origin: outPoint, destination: startLatLng, travelMode: google.maps.TravelMode.WALKING }, (r, status) => {
+          if (status === "OK" && r) resolve(r);
+          else reject(new Error("Directions API (назад): " + status));
+        });
+      });
+      const backPolyline = buildPolylineFromDirections(backResult, "#22c55e");
+      if (backPolyline) tab2Polylines.push(backPolyline);
 
-      .actions {
-        display: grid;
-        grid-template-columns: 1fr;
-        gap: 10px;
-        margin-top: 10px;
-      }
-
-      button {
-        appearance: none;
-        width: 100%;
-        border: 0;
-        border-radius: 16px;
-        padding: 14px 14px;
-        font-size: 18px;
-        font-weight: 650;
-        color: #071018;
-        background: linear-gradient(135deg, var(--accent2), var(--accent));
-        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.25);
-      }
-
-      button:disabled {
-        opacity: 0.6;
-        box-shadow: none;
-        cursor: not-allowed;
-      }
-
-      .ghostBtn {
-        background: transparent;
-        color: var(--text);
-        border: 1px solid var(--border);
-        box-shadow: none;
-        font-weight: 600;
-      }
-
-      .status {
-        margin-top: 8px;
-        font-size: 14px;
-        color: var(--muted);
-        line-height: 1.35;
-        min-height: 18px;
-      }
-
-      #mapWrap {
-        position: relative;
-        flex: 1;
-        margin: 0 0 14px;
-        overflow: hidden;
-      }
-
-      #map {
-        position: absolute;
-        inset: 0;
-      }
-
-      .overlay {
-        position: absolute;
-        left: 12px;
-        right: 12px;
-        bottom: 14px;
-        background: rgba(0, 0, 0, 0.35);
-        border: 1px solid rgba(255, 255, 255, 0.18);
-        border-radius: 16px;
-        padding: 12px 12px;
-        backdrop-filter: blur(10px);
-      }
-
-      @media (prefers-color-scheme: light) {
-        .overlay {
-          background: rgba(255, 255, 255, 0.55);
-          border: 1px solid rgba(2, 6, 23, 0.14);
-        }
-      }
-
-      .overlay .main {
-        font-size: 20px;
-        font-weight: 750;
-        letter-spacing: 0.2px;
-      }
-
-      .overlay .hint {
-        color: rgba(255, 255, 255, 0.75);
-        margin-top: 4px;
-        font-size: 13px;
-        line-height: 1.35;
-      }
-
-      @media (prefers-color-scheme: light) {
-        .overlay .hint {
-          color: rgba(2, 6, 23, 0.65);
-        }
-      }
-
-      .srOnly {
-        position: absolute;
-        width: 1px;
-        height: 1px;
-        padding: 0;
-        margin: -1px;
-        overflow: hidden;
-        clip: rect(0, 0, 0, 0);
-        white-space: nowrap;
-        border: 0;
-      }
-    </style>
-  </head>
-
-  <body>
-    <div class="app">
-      <header>
-        <div class="title">
-          <h1>StepMap</h1>
-        </div>
-        <div class="subtitle">
-          Маршрут на потрібну кількість кроків (PWA, без бекенду).
-        </div>
-      </header>
-
-      <div class="card">
-        <div class="grid">
-          <div class="row">
-            <div>
-              <label for="heightCm">Зріст (см)</label>
-              <input
-                id="heightCm"
-                inputmode="numeric"
-                type="number"
-                min="80"
-                max="250"
-                step="0.1"
-                placeholder="Напр.: 175"
-              />
-            </div>
-          </div>
-
-          <div class="row">
-            <div>
-              <label for="targetSteps">Денна ціль кроків</label>
-              <input
-                id="targetSteps"
-                inputmode="numeric"
-                type="number"
-                min="100"
-                step="100"
-                placeholder="10000"
-              />
-            </div>
-          </div>
-
-          <div class="row">
-            <div>
-              <label for="stepsToday">Вже пройдено кроків сьогодні</label>
-              <input
-                id="stepsToday"
-                inputmode="numeric"
-                type="number"
-                min="0"
-                step="1"
-                placeholder="0"
-              />
-            </div>
-          </div>
-
-          <div class="bigStat" aria-live="polite">
-            <div class="k" id="remainingStepsLabel">Лишалось: —</div>
-            <div class="m" id="remainingMetersLabel">
-              Вкажіть зріст, щоб розрахувати довжину кроку.
-            </div>
-          </div>
-        </div>
-
-        <div class="actions">
-          <button id="routeBtn" disabled type="button">
-            Показати маршрут
-          </button>
-          <button
-            id="resetBtn"
-            class="ghostBtn"
-            disabled
-            type="button"
-            title="Очистити карту та скинути статус"
-          >
-            Очистити
-          </button>
-        </div>
-
-        <div class="status" id="status"></div>
-      </div>
-
-      <div id="mapWrap">
-        <div id="map" aria-label="Карта"></div>
-        <div class="overlay" id="overlay">
-          <div class="main" id="overlayMain">Поки що без маршруту</div>
-          <div class="hint" id="overlayHint">
-            Натисніть “Показати маршрут” після вводу даних.
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <script>
-      // Заміни значення на свій Google Maps API key.
-      // Докладніше див. `README.md`.
-      const GOOGLE_MAPS_API_KEY = "AIzaSyCISXGRM0MRgKQLm-6TIKPolHUMJakR_vE";
-
-      const LS = {
-        heightCm: "stepmap:heightCm",
-        targetSteps: "stepmap:targetSteps",
+      const collectBounds = (res) => {
+        const path = res?.routes?.[0]?.overview_path || [];
+        for (const p of path) bounds.extend(p);
       };
+      collectBounds(outResult); collectBounds(backResult);
+      if (typeof bounds.isEmpty === "function" ? !bounds.isEmpty() : true) map.fitBounds(bounds);
 
-      const fmtUk = new Intl.NumberFormat("uk-UA");
+      const totalMetersActual = sumDistanceMetersFromDirections(outResult) + sumDistanceMetersFromDirections(backResult);
+      const totalStepsActual = Math.max(0, Math.round(totalMetersActual / stepMeters));
+      els.tab2Result.textContent = `Результат: ≈ ${fmtUk.format(totalStepsActual)} кроків (${fmtUk.format(Math.round(totalMetersActual))} м)`;
+      setStatus("");
+    } catch (e) {
+      setStatus(e?.message ? e.message : String(e));
+      els.tab2Result.textContent = "Результат: не вдалося побудувати маршрут";
+    } finally {
+      tab2Building = false;
+      updateTab2RemainingUI();
+      setStatus("");
+    }
+  });
 
-      const els = {
-        heightCm: document.getElementById("heightCm"),
-        targetSteps: document.getElementById("targetSteps"),
-        stepsToday: document.getElementById("stepsToday"),
-        remainingStepsLabel: document.getElementById("remainingStepsLabel"),
-        remainingMetersLabel: document.getElementById("remainingMetersLabel"),
-        routeBtn: document.getElementById("routeBtn"),
-        resetBtn: document.getElementById("resetBtn"),
-        status: document.getElementById("status"),
-        overlayMain: document.getElementById("overlayMain"),
-        overlayHint: document.getElementById("overlayHint"),
-        mapWrap: document.getElementById("mapWrap"),
-      };
+  els.clearTab2Btn.addEventListener("click", () => {
+    if (tab2Building) return;
+    clearTab2();
+  });
 
-      let map = null;
-      let directionsService = null;
-      let rendererOut = null;
-      let rendererBack = null;
+  // Settings drawer
+  function setDrawerOpen(open) { els.drawerOverlay.classList.toggle("open", open); }
+  els.gearBtn.addEventListener("click", () => setDrawerOpen(true));
+  els.closeDrawerBtn.addEventListener("click", () => setDrawerOpen(false));
+  els.drawerOverlay.addEventListener("click", (e) => { if (e.target === els.drawerOverlay) setDrawerOpen(false); });
 
-      let startLatLng = null;
-      let lastRouteTotal = null;
+  els.heightCm.addEventListener("input", () => { updateDrawerStepInfo(); updateTab1UI(); updateTab2RemainingUI(); });
+  els.heightCm.addEventListener("change", () => { saveSettings(); updateDrawerStepInfo(); updateTab1UI(); updateTab2RemainingUI(); });
+  els.targetSteps.addEventListener("change", () => { saveSettings(); updateTab1UI(); updateTab2RemainingUI(); });
 
-      function setStatus(msg) {
-        els.status.textContent = msg || "";
-      }
+  els.tab1Btn.addEventListener("click", () => setActiveTab("tab1"));
+  els.tab2Btn.addEventListener("click", () => setActiveTab("tab2"));
 
-      function loadSettings() {
-        const heightRaw = localStorage.getItem(LS.heightCm);
-        const targetRaw = localStorage.getItem(LS.targetSteps);
+  // PWA offline
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(() => {}));
+  }
 
-        const height = heightRaw ? Number(heightRaw) : null;
-        const target = targetRaw ? Number(targetRaw) : 10000;
-
-        if (height && Number.isFinite(height)) els.heightCm.value = String(height);
-        els.targetSteps.value = Number.isFinite(target) ? String(target) : "10000";
-      }
-
-      function saveSettings() {
-        if (els.heightCm.value !== "") localStorage.setItem(LS.heightCm, els.heightCm.value);
-        else localStorage.removeItem(LS.heightCm);
-
-        if (els.targetSteps.value !== "") localStorage.setItem(LS.targetSteps, els.targetSteps.value);
-      }
-
-      function stepMetersFromHeightCm(heightCm) {
-        // За формулою: зріст_см × 0.414 / 100 = метри
-        return heightCm * 0.414 / 100;
-      }
-
-      function getInputs() {
-        const heightCm = els.heightCm.value === "" ? null : Number(els.heightCm.value);
-        const targetSteps = els.targetSteps.value === "" ? null : Number(els.targetSteps.value);
-        const stepsToday = els.stepsToday.value === "" ? null : Number(els.stepsToday.value);
-        return { heightCm, targetSteps, stepsToday };
-      }
-
-      function updateRemainingUI() {
-        const { heightCm, targetSteps, stepsToday } = getInputs();
-
-        if (targetSteps == null || stepsToday == null || !Number.isFinite(targetSteps) || !Number.isFinite(stepsToday)) {
-          els.remainingStepsLabel.textContent = "Лишалось: —";
-          els.remainingMetersLabel.textContent = "Вкажіть ціль та вже пройдено кроків.";
-          els.routeBtn.disabled = true;
-          return;
-        }
-
-        const remainingSteps = Math.max(0, targetSteps - stepsToday);
-        els.remainingStepsLabel.textContent = `Лишалось: ${fmtUk.format(remainingSteps)} кроків`;
-
-        if (heightCm == null || !Number.isFinite(heightCm)) {
-          els.remainingMetersLabel.textContent = "Вкажіть зріст, щоб розрахувати довжину кроку.";
-        } else {
-          const stepMeters = stepMetersFromHeightCm(heightCm);
-          const remainingMeters = remainingSteps * stepMeters;
-          const remainingMetersRounded = Math.round(remainingMeters);
-          const stepMetersRounded = Math.round(stepMeters * 100) / 100;
-
-          els.remainingStepsLabel.textContent = `Лишалось: ${fmtUk.format(remainingSteps)} кроків = ${fmtUk.format(
-            remainingMetersRounded
-          )} м`;
-          els.remainingMetersLabel.textContent = `Довжина кроку: ${fmtUk.format(stepMetersRounded)} м`;
-        }
-
-        els.routeBtn.disabled = !(heightCm != null && Number.isFinite(heightCm) && remainingSteps > 0);
-      }
-
-      function loadGoogleMapsScript() {
-        return new Promise((resolve, reject) => {
-          if (!GOOGLE_MAPS_API_KEY || GOOGLE_MAPS_API_KEY === "ВАШ_КЛЮЧ") {
-            reject(new Error("GOOGLE_MAPS_API_KEY не заданий."));
-            return;
-          }
-
-          if (window.google && window.google.maps) {
-            resolve();
-            return;
-          }
-
-          const existing = document.querySelector('script[data-stepmap="google-maps"]');
-          if (existing) {
-            existing.addEventListener("load", () => resolve());
-            existing.addEventListener("error", reject);
-            return;
-          }
-
-          window.initStepMap = () => resolve();
-
-          const s = document.createElement("script");
-          s.dataset.stepmap = "google-maps";
-          s.async = true;
-          s.defer = true;
-          s.src =
-            "https://maps.googleapis.com/maps/api/js?key=" +
-            encodeURIComponent(GOOGLE_MAPS_API_KEY) +
-            "&v=weekly&callback=initStepMap";
-          document.head.appendChild(s);
-        });
-      }
-
-      function ensureMap() {
-        if (map) return;
-
-        map = new google.maps.Map(document.getElementById("map"), {
-          zoom: 15,
-          center: { lat: 0, lng: 0 },
-          fullscreenControl: false,
-          streetViewControl: false,
-          mapTypeControl: false,
-          zoomControl: true,
-        });
-
-        directionsService = new google.maps.DirectionsService();
-        rendererOut = new google.maps.DirectionsRenderer({
-          map,
-          suppressMarkers: false,
-          polylineOptions: { strokeColor: "#60a5fa", strokeWeight: 6, strokeOpacity: 0.9 },
-          preserveViewport: true,
-        });
-        rendererBack = new google.maps.DirectionsRenderer({
-          map,
-          suppressMarkers: false,
-          polylineOptions: { strokeColor: "#22c55e", strokeWeight: 6, strokeOpacity: 0.9 },
-          preserveViewport: true,
-        });
-      }
-
-      function getCurrentLocation() {
-        return new Promise((resolve, reject) => {
-          if (!navigator.geolocation) {
-            reject(new Error("Geolocation API не підтримується."));
-            return;
-          }
-          navigator.geolocation.getCurrentPosition(
-            (pos) => {
-              const { latitude, longitude } = pos.coords;
-              resolve({ lat: latitude, lng: longitude });
-            },
-            (err) => reject(err),
-            { enableHighAccuracy: true, timeout: 12000, maximumAge: 2000 }
-          );
-        });
-      }
-
-      function toRadians(deg) {
-        return (deg * Math.PI) / 180;
-      }
-      function toDegrees(rad) {
-        return (rad * 180) / Math.PI;
-      }
-
-      function computeDestination(start, distanceMeters, bearingDegrees) {
-        // Виходимо з сфери Землі та бєарингу.
-        const R = 6378137;
-        const brng = toRadians(bearingDegrees);
-        const lat1 = toRadians(start.lat);
-        const lon1 = toRadians(start.lng);
-        const dByR = distanceMeters / R;
-
-        const lat2 = Math.asin(
-          Math.sin(lat1) * Math.cos(dByR) +
-            Math.cos(lat1) * Math.sin(dByR) * Math.cos(brng)
-        );
-        const lon2 =
-          lon1 +
-          Math.atan2(
-            Math.sin(brng) * Math.sin(dByR) * Math.cos(lat1),
-            Math.cos(dByR) - Math.sin(lat1) * Math.sin(lat2)
-          );
-
-        return { lat: toDegrees(lat2), lng: toDegrees(lon2) };
-      }
-
-      function formatStepsAndMeters(steps, meters) {
-        const metersRounded = Math.round(meters);
-        return `≈ ${fmtUk.format(steps)} кроків (${fmtUk.format(metersRounded)} м)`;
-      }
-
-      function sumMetersFromDirectionsResult(result) {
-        let meters = 0;
-        const routes = result && result.routes ? result.routes : [];
-        for (const r of routes) {
-          const legs = (r && r.legs) ? r.legs : [];
-          for (const leg of legs) {
-            if (leg && leg.distance && typeof leg.distance.value === "number") {
-              meters += leg.distance.value;
-            }
-          }
-        }
-        return meters;
-      }
-
-      function clearRoute() {
-        if (rendererOut) rendererOut.setDirections({ routes: [] });
-        if (rendererBack) rendererBack.setDirections({ routes: [] });
-        lastRouteTotal = null;
-        els.overlayMain.textContent = "Поки що без маршруту";
-        els.overlayHint.textContent = "Натисніть “Показати маршрут” після вводу даних.";
-        els.resetBtn.disabled = true;
-      }
-
-      async function buildRoundTripRoute() {
-        setStatus("Отримую геолокацію…");
-        if (!startLatLng) {
-          startLatLng = await getCurrentLocation();
-        }
-
-        const { heightCm, targetSteps, stepsToday } = getInputs();
-        if (heightCm == null || !Number.isFinite(heightCm)) throw new Error("Вкажіть зріст.");
-        if (targetSteps == null || stepsToday == null) throw new Error("Вкажіть ціль та вже пройдено кроків.");
-
-        const remainingSteps = Math.max(0, targetSteps - stepsToday);
-        if (remainingSteps <= 0) {
-          els.overlayMain.textContent = "Ціль вже досягнута";
-          els.overlayHint.textContent = "Маршрут не потрібен.";
-          return;
-        }
-
-        const stepMeters = stepMetersFromHeightCm(heightCm);
-        if (!(stepMeters > 0)) throw new Error("Некоректне значення росту.");
-
-        // Загальна відстань маршруту (вихід + назад) ≈ remainingSteps * stepMeters.
-        const totalMeters = remainingSteps * stepMeters;
-        const outMeters = totalMeters / 2;
-
-        ensureMap();
-        map.setCenter(startLatLng);
-
-        const bearing = 0; // Північ (можна змінити, якщо захочеш інший стиль маршруту)
-        const outPoint = computeDestination(startLatLng, outMeters, bearing);
-
-        setStatus("Будую маршрут (вихід)…");
-        els.resetBtn.disabled = false;
-
-        const [outResult, backResult] = await Promise.all([
-          new Promise((resolve, reject) => {
-            directionsService.route(
-              {
-                origin: startLatLng,
-                destination: outPoint,
-                travelMode: google.maps.TravelMode.WALKING,
-              },
-              (res, status) => {
-                if (status === "OK" && res) resolve(res);
-                else reject(new Error("Directions API (вихід) помилка: " + status));
-              }
-            );
-          }),
-          new Promise((resolve, reject) => {
-            directionsService.route(
-              {
-                origin: outPoint,
-                destination: startLatLng,
-                travelMode: google.maps.TravelMode.WALKING,
-              },
-              (res, status) => {
-                if (status === "OK" && res) resolve(res);
-                else reject(new Error("Directions API (назад) помилка: " + status));
-              }
-            );
-          }),
-        ]);
-
-        rendererOut.setDirections(outResult);
-        rendererBack.setDirections(backResult);
-
-        const totalMetersActual = sumMetersFromDirectionsResult(outResult) + sumMetersFromDirectionsResult(backResult);
-        const totalStepsActual = Math.max(0, Math.round(totalMetersActual / stepMeters));
-        lastRouteTotal = { totalMetersActual, totalStepsActual };
-
-        els.overlayMain.textContent = formatStepsAndMeters(totalStepsActual, totalMetersActual);
-        els.overlayHint.textContent = "Маршрут побудовано з використанням WALKING Directions.";
-        setStatus("");
-      }
-
-      async function initApp() {
-        loadSettings();
-        updateRemainingUI();
-
-        // Події вводу
-        for (const id of ["heightCm", "targetSteps", "stepsToday"]) {
-          els[id].addEventListener("input", () => {
-            saveSettings();
-            updateRemainingUI();
-          });
-          els[id].addEventListener("change", () => {
-            saveSettings();
-            updateRemainingUI();
-          });
-        }
-
-        els.routeBtn.addEventListener("click", async () => {
-          try {
-            els.routeBtn.disabled = true;
-            setStatus("Запускаю карту…");
-            await loadGoogleMapsScript();
-            ensureMap();
-            await buildRoundTripRoute();
-          } catch (e) {
-            setStatus(String(e && e.message ? e.message : e));
-            els.overlayMain.textContent = "Не вдалося побудувати маршрут";
-            els.overlayHint.textContent = "Спробуй ще раз або перевір API ключ та геолокацію.";
-          } finally {
-            // Повертаємо кнопку залежно від вводу
-            updateRemainingUI();
-          }
-        });
-
-        els.resetBtn.addEventListener("click", () => {
-          clearRoute();
-          setStatus("");
-        });
-
-        // Сервіс-воркер (офлайн)
-        if ("serviceWorker" in navigator) {
-          window.addEventListener("load", async () => {
-            try {
-              await navigator.serviceWorker.register("./sw.js");
-            } catch (e) {
-              // Не критично
-            }
-          });
-        }
-
-        // Стартове завантаження карти + геолокації
-        try {
-          setStatus("Завантаження Google Maps…");
-          await loadGoogleMapsScript();
-          ensureMap();
-
-          setStatus("Читаю геолокацію…");
-          startLatLng = await getCurrentLocation();
-          map.setCenter(startLatLng);
-          setStatus("");
-        } catch (e) {
-          // Якщо геолокація або API не доступні — не блокуємо ввід
-          setStatus(String(e && e.message ? e.message : e));
-          clearRoute();
-        }
-      }
-
-      initApp();
-    </script>
-  </body>
-</html>
-
+  // Init
+  (async function init(){
+    loadSettings();
+    setActiveTab("tab1");
+    updateTab2RemainingUI();
+    try {
+      setStatus("Завантаження Google Maps…");
+      await loadGoogleMapsScript();
+      ensureMap();
+      try { startLatLng = await getCurrentLocation(); map.setCenter(startLatLng); } catch {}
+      setStatus("");
+    } catch (e) {
+      setStatus(e?.message ? e.message : String(e));
+    }
+  })();
+</script></body></html>
